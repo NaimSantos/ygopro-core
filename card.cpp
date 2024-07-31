@@ -3418,7 +3418,7 @@ int32_t card::is_can_be_special_summoned(effect* reason_effect, uint32_t sumtype
 	if((data.type & TYPE_PENDULUM) && current.location == LOCATION_EXTRA && (current.position & POS_FACEUP)
 		&& (sumtype == SUMMON_TYPE_FUSION || sumtype == SUMMON_TYPE_SYNCHRO || sumtype == SUMMON_TYPE_XYZ))
 		return FALSE;
-	if((sumpos & POS_FACEDOWN) && pduel->game_field->is_player_affected_by_effect(sumplayer, EFFECT_DEVINE_LIGHT))
+	if((sumpos & POS_FACEDOWN) && pduel->game_field->is_player_affected_by_effect(sumplayer, EFFECT_LIGHT_OF_INTERVENTION))
 		sumpos = (sumpos & POS_FACEUP) | ((sumpos & POS_FACEDOWN) >> 1);
 	if((sumpos & POS_FACEUP) && pduel->game_field->check_unique_onfield(this, toplayer, LOCATION_MZONE)) {
 		if((sumpos &= ~POS_FACEUP) == 0)

@@ -2700,7 +2700,7 @@ int32_t field::is_player_can_summon(uint32_t sumtype, uint8_t playerid, card* pc
 	eset.clear();
 	filter_player_effect(playerid, EFFECT_FORCE_NORMAL_SUMMON_POSITION, &eset);
 	uint8_t sumpos = POS_FACEUP_ATTACK;
-	if(is_player_affected_by_effect(playerid, EFFECT_DEVINE_LIGHT))
+	if(is_player_affected_by_effect(playerid, EFFECT_LIGHT_OF_INTERVENTION))
 		sumpos = POS_FACEUP;
 	for(auto& eff : eset) {
 		if(eff->target) {
@@ -2779,7 +2779,7 @@ int32_t field::is_player_can_spsummon(effect* peffect, uint32_t sumtype, uint8_t
 		return FALSE;
 	}
 	restore_lp_cost();
-	if(sumpos & POS_FACEDOWN && is_player_affected_by_effect(playerid, EFFECT_DEVINE_LIGHT))
+	if(sumpos & POS_FACEDOWN && is_player_affected_by_effect(playerid, EFFECT_LIGHT_OF_INTERVENTION))
 		sumpos = (sumpos & POS_FACEUP) | ((sumpos & POS_FACEDOWN) >> 1);
 	effect_set eset;
 	filter_player_effect(playerid, EFFECT_CANNOT_SPECIAL_SUMMON, &eset);

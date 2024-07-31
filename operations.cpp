@@ -173,7 +173,7 @@ void field::special_summon_rule_group(uint8_t sumplayer, uint32_t summon_type) {
 	emplace_process<Processors::SpSummonRuleGroup>(sumplayer, summon_type);
 }
 void field::special_summon(card_set target, uint32_t sumtype, uint8_t sumplayer, uint8_t playerid, bool nocheck, bool nolimit, uint8_t positions, uint32_t zone) {
-	if((positions & POS_FACEDOWN) && is_player_affected_by_effect(sumplayer, EFFECT_DEVINE_LIGHT))
+	if((positions & POS_FACEDOWN) && is_player_affected_by_effect(sumplayer, EFFECT_LIGHT_OF_INTERVENTION))
 		positions = (positions & POS_FACEUP) | ((positions & POS_FACEDOWN) >> 1);
 	effect_set eset;
 	filter_player_effect(sumplayer, EFFECT_FORCE_SPSUMMON_POSITION, &eset);
@@ -211,7 +211,7 @@ void field::special_summon(card_set target, uint32_t sumtype, uint8_t sumplayer,
 	emplace_process<Processors::SpSummon>(core.reason_effect, core.reason_player, pgroup, zone);
 }
 void field::special_summon_step(card* target, uint32_t sumtype, uint8_t sumplayer, uint8_t playerid, bool nocheck, bool nolimit, uint8_t positions, uint32_t zone) {
-	if((positions & POS_FACEDOWN) && is_player_affected_by_effect(sumplayer, EFFECT_DEVINE_LIGHT))
+	if((positions & POS_FACEDOWN) && is_player_affected_by_effect(sumplayer, EFFECT_LIGHT_OF_INTERVENTION))
 		positions = (positions & POS_FACEUP) | ((positions & POS_FACEDOWN) >> 1);
 	if((positions & POS_FACEUP) && check_unique_onfield(target, playerid, LOCATION_MZONE))
 		positions &= ~POS_FACEUP;
@@ -2164,7 +2164,7 @@ bool field::process(Processors::SummonRule& arg) {
 	case 9: {
 		uint8_t targetplayer = sumplayer;
 		uint8_t positions = POS_FACEUP_ATTACK;
-		if(is_player_affected_by_effect(sumplayer, EFFECT_DEVINE_LIGHT))
+		if(is_player_affected_by_effect(sumplayer, EFFECT_LIGHT_OF_INTERVENTION))
 			positions = POS_FACEUP;
 		if(summon_procedure_effect && summon_procedure_effect->is_flag(EFFECT_FLAG_SPSUM_PARAM)) {
 			positions = (uint8_t)summon_procedure_effect->s_range & POS_FACEUP;
