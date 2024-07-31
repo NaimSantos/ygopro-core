@@ -1975,6 +1975,10 @@ void field::get_fusion_material(uint8_t playerid, card_set* material) {
 	for(auto& pcard : player[playerid].list_grave)
 		if(pcard->is_affected_by_effect(EFFECT_EXTRA_FUSION_MATERIAL))
 			material->insert(pcard);
+	for (auto& pcard : player[playerid].list_extra) {
+		if (pcard && pcard->is_affected_by_effect(EFFECT_EXTRA_FUSION_MATERIAL))
+			material->insert(pcard);
+	}
 }
 void field::ritual_release(const card_set& material) {
 	card_set rel, rem, tograve;
