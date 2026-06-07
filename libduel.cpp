@@ -1363,8 +1363,10 @@ LUA_STATIC_FUNCTION(ShuffleSetCard) {
 	auto pgroup = lua_get<group*, true>(L, 1);
 	if(pgroup->container.size() <= 0)
 		return 0;
-	card* ms[7];
-	uint8_t seq[7];
+	if(pgroup->container.size() > 5)
+		return 0;
+	card* ms[5];
+	uint8_t seq[5];
 	auto it = pgroup->container.begin();
 	uint8_t ct = 0;
 	ms[ct] = *it;
@@ -1404,9 +1406,11 @@ LUA_STATIC_FUNCTION(ShuffleSetCard) {
 	auto message = pduel->new_message(MSG_SHUFFLE_SET_CARD);
 	message->write<uint8_t>(loc);
 	message->write<uint8_t>(ct);
+	for(auto* pcard : pgroup->container) {
+		message->write(pcard->get_info_location());
+	}
 	for(uint32_t i = 0; i < ct; ++i) {
 		card* pcard = ms[i];
-		message->write(pcard->get_info_location());
 		list[seq[i]] = pcard;
 		pcard->current.sequence = seq[i];
 		field->raise_single_event(pcard, nullptr, EVENT_MOVE, pcard->current.reason_effect, pcard->current.reason, pcard->current.reason_player, tp, 0);
@@ -1414,9 +1418,9 @@ LUA_STATIC_FUNCTION(ShuffleSetCard) {
 	field->raise_event(pgroup->container, EVENT_MOVE, field->core.reason_effect, 0, field->core.reason_player, tp, 0);
 	field->process_single_event();
 	field->process_instant_event();
-	for(uint32_t i = 0; i < ct; ++i) {
-		if(ms[i]->xyz_materials.size()) {
-			message->write(ms[i]->get_info_location());
+	for(auto* pcard : pgroup->container) {
+		if(pcard->xyz_materials.size()) {
+			message->write(pcard->get_info_location());
 		} else {
 			message->write(loc_info{});
 		}
@@ -1931,6 +1935,15 @@ LUA_STATIC_FUNCTION(GetChainInfo) {
 			break;
 		case CHAININFO::TRIGGERING_RANK:
 			lua_pushinteger(L, ch->triggering_state.rank);
+			break;
+		case CHAININFO::TRIGGERING_LSCALE:
+			lua_pushinteger(L, ch->triggering_state.lscale);
+			break;
+		case CHAININFO::TRIGGERING_RSCALE:
+			lua_pushinteger(L, ch->triggering_state.rscale);
+			break;
+		case CHAININFO::TRIGGERING_LINK:
+			lua_pushinteger(L, ch->triggering_state.link);
 			break;
 		case CHAININFO::TRIGGERING_ATTRIBUTE:
 			lua_pushinteger(L, ch->triggering_state.attribute);
@@ -3695,7 +3708,7 @@ LUA_STATIC_FUNCTION(IsPlayerCanFlipSummon) {
 	return 1;
 }
 LUA_STATIC_FUNCTION(IsPlayerCanSpecialSummonMonster) {
-	check_param_count(L, 9);
+	check_param_count(L, 2);
 	auto playerid = lua_get<uint8_t>(L, 1);
 	if(playerid != 0 && playerid != 1) {
 		lua_pushboolean(L, 0);
@@ -3801,7 +3814,8 @@ LUA_STATIC_FUNCTION(IsPlayerCanSendtoGrave) {
 	else {
 		check_param_count(L, 2);
 		auto pcard = lua_get<card*, true>(L, 2);
-		lua_pushboolean(L, pduel->game_field->is_player_can_send_to_grave(playerid, pcard));
+		auto reason = lua_get<uint32_t, REASON_EFFECT>(L, 3);
+		lua_pushboolean(L, pduel->game_field->is_player_can_send_to_grave(playerid, pcard, reason));
 	}
 	return 1;
 }

@@ -188,7 +188,13 @@ void card::get_infos(uint32_t query_flag) {
 	}
 	CHECK_AND_INSERT_T(QUERY_OWNER, owner, uint8_t);
 	CHECK_AND_INSERT(QUERY_STATUS, status);
-	CHECK_AND_INSERT_T(QUERY_IS_PUBLIC, (is_position(POS_FACEUP) || is_related_to_chains() || (current.location == LOCATION_HAND && is_affected_by_effect(EFFECT_PUBLIC))) ? 1 : 0, uint8_t);
+	// HACK: to remove once the servers are updated to send this flag
+	if(true /* query_flag & QUERY_IS_PUBLIC */) {
+		insert_value<uint16_t>(pduel->query_buffer, sizeof(uint32_t) + sizeof(uint8_t));
+		insert_value<uint32_t>(pduel->query_buffer, QUERY_IS_PUBLIC);
+		auto is_public = (is_position(POS_FACEUP) || is_related_to_chains() || (current.is_location(LOCATION_HAND | LOCATION_ONFIELD) && is_affected_by_effect(EFFECT_PUBLIC)));
+		insert_value<uint8_t>(pduel->query_buffer, is_public ? 1 : 0);
+	}
 	CHECK_AND_INSERT(QUERY_LSCALE, get_lscale());
 	CHECK_AND_INSERT(QUERY_RSCALE, get_rscale());
 	if(query_flag & QUERY_LINK) {
@@ -2204,7 +2210,7 @@ int32_t card::destination_redirect(uint8_t destination, uint32_t reason) {
 			return redirect;
 		if((redirect & LOCATION_REMOVED) && !is_affected_by_effect(EFFECT_CANNOT_REMOVE) && pduel->game_field->is_player_can_remove(peff->get_handler_player(), this, REASON_EFFECT))
 			return redirect;
-		if((redirect & LOCATION_GRAVE) && !is_affected_by_effect(EFFECT_CANNOT_TO_GRAVE) && pduel->game_field->is_player_can_send_to_grave(peff->get_handler_player(), this))
+		if((redirect & LOCATION_GRAVE) && !is_affected_by_effect(EFFECT_CANNOT_TO_GRAVE) && pduel->game_field->is_player_can_send_to_grave(peff->get_handler_player(), this, REASON_EFFECT))
 			return redirect;
 	}
 	return 0;
@@ -3599,10 +3605,10 @@ int32_t card::is_releasable_by_effect(uint8_t playerid, effect* peffect) {
 	}
 	return TRUE;
 }
-int32_t card::is_capable_send_to_grave(uint8_t playerid) {
+int32_t card::is_capable_send_to_grave(uint8_t playerid, uint32_t reason) {
 	if(is_affected_by_effect(EFFECT_CANNOT_TO_GRAVE))
 		return FALSE;
-	if(!pduel->game_field->is_player_can_send_to_grave(playerid, this))
+	if(!pduel->game_field->is_player_can_send_to_grave(playerid, this, reason))
 		return FALSE;
 	return TRUE;
 }
@@ -3652,7 +3658,7 @@ int32_t card::is_capable_cost_to_grave(uint8_t playerid) {
 		return FALSE;
 	if(is_affected_by_effect(EFFECT_CANNOT_TO_GRAVE_AS_COST))
 		return FALSE;
-	if(!is_capable_send_to_grave(playerid))
+	if(!is_capable_send_to_grave(playerid, REASON_COST))
 		return FALSE;
 	auto op_param = sendto_param;
 	sendto_param.location = dest;
